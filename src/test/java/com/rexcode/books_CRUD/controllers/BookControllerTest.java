@@ -1,7 +1,6 @@
 package com.rexcode.books_CRUD.controllers;
 
 import static com.rexcode.books_CRUD.TestData.testBook;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,9 +37,7 @@ public class BookControllerTest {
         final Book book = testBook();
         final ObjectMapper objectMapper = new ObjectMapper();
         final String bookJson = objectMapper.writeValueAsString(book);
-    
-        when(bookService.isBookExist(book)).thenReturn(false);
-    
+
         mockMvc.perform(MockMvcRequestBuilders.put("/books/" + book.getIsbn())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(bookJson))
@@ -49,17 +46,16 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
     }
-    
 
     @Test
     public void testThatBookIsUpdated() throws Exception {
-        final Book book = testBook();
+        final Book book = TestData.testBook();
+        bookService.save(book);
+
         final ObjectMapper objectMapper = new ObjectMapper();
         final String bookJson = objectMapper.writeValueAsString(book);
 
-        // Simulate that the book already exists
-        when(bookService.isBookExist(book)).thenReturn(true);
-
+        book.setAuthor("Amos Brown");
         mockMvc.perform(MockMvcRequestBuilders.put("/books/" + book.getIsbn())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(bookJson))
@@ -110,19 +106,19 @@ public class BookControllerTest {
     }
 
     @Test
-    public void testAttemptToDeleteBookWhenReturn204WhenItDoesntExist() throws Exception  {
+    public void testAttemptToDeleteBookWhenReturn204WhenItDoesntExist() throws Exception {
 
-      mockMvc.perform(MockMvcRequestBuilders.delete("/books/43546"))
-      .andExpect(MockMvcResultMatchers.status().isNoContent());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/books/43546"))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
     @Test
-    public void testToDeleteBookWhenBookIsDeleted() throws Exception  {
+    public void testToDeleteBookWhenBookIsDeleted() throws Exception {
         final Book book = TestData.testBook();
         bookService.save(book);
 
-      mockMvc.perform(MockMvcRequestBuilders.delete("/books/ " + book.getIsbn()))
-      .andExpect(MockMvcResultMatchers.status().isIAmATeapot());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/books/ " + book.getIsbn()))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
 }
